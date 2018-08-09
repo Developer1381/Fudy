@@ -7,6 +7,7 @@ import ImageLinkForm from './Components/ImageLinkForm/ImageLinkForm';
 import SignIn from './Components/SignIn/SignIn';
 import SignUp from './Components/SignUp/SignUp';
 import InfoText from './Components/InfoText/InfoText';
+import FaceDetection from './Components/FaceDetection/FaceDetection';
 
 const particleOptions = {
 
@@ -22,9 +23,25 @@ const particleOptions = {
 
 }
 
-//const apiKey = "31b8452ce9d74d2e87489d86a037dcc3";
+const defaultState = {
+	
+	page: "signin",
+	isSignedIn: false,
+	user: {
+		id: '',
+		name: '',
+		email: '',
+		entries: ''
+	},
+	imageUrl: "",
+	inputLink: "",
+	box: ""
 
-//const app = new Clarifai.App({ apiKey });
+};
+
+const apiKey = "31b8452ce9d74d2e87489d86a037dcc3";
+
+const app = new Clarifai.App({ apiKey });
 
 class App extends React.Component {
 
@@ -40,7 +57,10 @@ class App extends React.Component {
 				name: '',
 				email: '',
 				entries: ''
-			}
+			},
+			imageUrl: "",
+			inputLink: "",
+			box: ""
 
 		};
 
@@ -49,7 +69,7 @@ class App extends React.Component {
 	onPageChange = (page) => {
 
 		page === 'home' ? this.setState({isSignedIn: true})
-		: this.setState({isSignedIn: false})
+		: this.setState(defaultState);
 
 		this.setState({page});
 
@@ -68,6 +88,51 @@ class App extends React.Component {
 
 	}
 
+	onInputLinkChange = (event) => {
+
+		this.setState({inputLink: event.target.value});
+
+	}
+
+	onSubmitImage = () => {
+
+		const link = this.state.inputLink;
+		this.setState({imageUrl: link});
+		app.models.predict(Clarifai.FACE_DETECT_MODEL, link)
+		.then(response => {
+
+			this.displayImageBox(this.calculateImageBox(response));
+			fetch('https://fudy-api.herokuapp.com/image', {
+				method: 'put',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({id: this.state.user.id})
+			})
+			.then(response => response.json())
+			.then(entries => this.setState(Object.assign(this.state.user, {entries})));
+
+    	});
+
+	}
+
+	calculateImageBox = (data) => {
+
+		const element = document.getElementById('image');
+		const width = Number(element.width);
+		const height = Number(element.height);
+   		const { top_row, bottom_row, right_col, left_col } = data.outputs[0].data.regions[0].region_info.bounding_box;
+		return {
+
+			top: height * top_row,
+			bottom: height - (height * bottom_row),
+			right: width - (width * right_col),
+			left: width * left_col
+
+		};
+
+	}
+
+	displayImageBox = (box) => this.setState({box});
+
 	render() {	
 
 		return (
@@ -85,7 +150,8 @@ class App extends React.Component {
 	    				this.state.page === 'home' ? 
 	    				<div>
 	    					<InfoText name={this.state.user.name} entries={this.state.user.entries} />
-	    					<ImageLinkForm />
+	    					<ImageLinkForm onInputLinkChange={this.onInputLinkChange} onSubmitImage={this.onSubmitImage}/>
+	    					<FaceDetection imageUrl={this.state.imageUrl} box={this.state.box} />
 	    				</div>
 	    				:
 	    				this.state.page === 'signin' ?

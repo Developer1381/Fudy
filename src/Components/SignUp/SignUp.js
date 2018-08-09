@@ -36,7 +36,7 @@ class SignUp extends React.Component {
 	onSubmitSignUp = () => {
 
 		const { name, email, password } = this.state;
-		fetch('http://localhost:3000/register', {
+		fetch('https://fudy-api.herokuapp.com/register', {
 			method: 'post',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify({
