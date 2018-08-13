@@ -1,6 +1,5 @@
 import React from 'react';
 import Clarifai from 'clarifai';
-import Particles from 'react-particles-js';
 import './App.css'
 import Navigation from './Components/Navigation/Navigation';
 import ImageLinkForm from './Components/ImageLinkForm/ImageLinkForm';
@@ -8,20 +7,6 @@ import SignIn from './Components/SignIn/SignIn';
 import SignUp from './Components/SignUp/SignUp';
 import InfoText from './Components/InfoText/InfoText';
 import FaceDetection from './Components/FaceDetection/FaceDetection';
-
-const particleOptions = {
-
-	particles: {
-		number: {
-			value: 100,
-			density: {
-				enable: true,
-				value_area: 750
-			}
-		}
-	}
-
-}
 
 const defaultState = {
 	
@@ -139,9 +124,6 @@ class App extends React.Component {
 
 			<div>
 
-				<Particles className="particle"
-	            	params={particleOptions}
-	    		/>
 	    		<div className="App">
 
 	    			<Navigation onPageChange={this.onPageChange} isSignedIn={this.state.isSignedIn} />
